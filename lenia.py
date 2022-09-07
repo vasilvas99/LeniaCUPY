@@ -52,7 +52,7 @@ class Lenia:
                  ):
 
         if world is None:
-            np.random.seed(int(0))
+            np.random.seed(int(monotonic()))
             self.__world__ = np.random.rand(random_world_size, random_world_size)
         else:
             self.__world__ = world
@@ -63,7 +63,7 @@ class Lenia:
             self.__kernel_func__ = kernel_func
 
         if growth_func is None:
-            self.__growth_func__ = lambda x: (np.exp(-((x - 0.135) / 0.015) ** 2 / 2)) * 2 - 1
+            self.__growth_func__ = lambda x: (np.exp(-((x - 0.135) / 0.035) ** 2 / 2)) * 2 - 1
         else:
             self.__growth_func__ = growth_func
 
@@ -119,10 +119,8 @@ class Lenia:
 
 if __name__ == "__main__":
     l = Lenia(
-        # kernel_radius=10, kernel_func=lambda x: x ** 2 <= 1 / 10,
-        # clipping_func=lambda x: 1 / (1 + np.exp(-x))
-        random_world_size=512
+        random_world_size=1024
     )
     l.calculate_frames(1000)
     a = l.animate()
-    a.save("lenia_modified.mp4", writer="ffmpeg", fps=24)
+    a.save("lenia_run.gif", writer="ffmpeg", fps=24)
