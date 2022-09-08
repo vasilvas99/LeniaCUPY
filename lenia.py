@@ -104,7 +104,7 @@ class Lenia:
         for i in range(num_of_frames):
             self.__update_world__()
         time_taken = monotonic() - t0
-        print(f"Calculations done in {time_taken} ms. Time per frame: {time_taken / num_of_frames} ms.")
+        print(f"Calculations done in {time_taken} s. Time per frame: {time_taken / num_of_frames} s.")
 
     def __update_plot__(self, step):  # step required by func anim in matplotlib
         if not self.__frames__:
@@ -129,10 +129,11 @@ def main():
         world=world_gen(100, 10),
         clipping_func=lambda x: 1/(1+np.exp(-x))
     )
-    l.calculate_frames(1000)
+    l.calculate_frames(100)
     a = l.animate()
+    t0 = monotonic()
     a.save(f"runs/lenia_run_{int(monotonic())}.mp4", writer="ffmpeg", fps=24)
-    print("Animation saved.")
+    print(f"Animation saved in {monotonic()-t0} s.")
 
 
 if __name__ == "__main__":
