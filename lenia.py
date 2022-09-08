@@ -26,7 +26,6 @@ def characteristics_plot(kernel, growth=None, clipping=None):
     # kernel
     ax[0].set_title("Kernel")
     ax[0].imshow(pure_array(kernel), vmin=0)
-
     # growth function plot
     ax[1].set_title("Growth function")
     x_growth = np.linspace(0, 1)
@@ -45,7 +44,7 @@ def characteristics_plot(kernel, growth=None, clipping=None):
 
 class Lenia:
     def __init__(self,
-                 kernel_radius=10, kernel_func=None,
+                 kernel_radius=10, kernel_func=None, kernel_norm=None,
                  world=None, random_world_size=64,
                  update_freq=10, growth_func=None,
                  clipping_func=None
@@ -62,6 +61,11 @@ class Lenia:
         else:
             self.__kernel_func__ = kernel_func
 
+        if kernel_norm is None:
+            kernel_norm = lambda x, y: np.sqrt(x ** 2 + y ** 2)
+        else:
+            kernel_norm = kernel_norm
+
         if growth_func is None:
             self.__growth_func__ = lambda x: (np.exp(-((x - 0.135) / 0.035) ** 2 / 2)) * 2 - 1
         else:
@@ -75,9 +79,10 @@ class Lenia:
         # calculate kernel
         R = kernel_radius
         x_arr, y_arr = np.mgrid[-R:R, -R:R] + 1
-        D = np.sqrt(x_arr ** 2 + y_arr ** 2) / R
+        D = kernel_norm(x_arr, y_arr) / R
         self.__kernel__ = self.__kernel_func__(D)
         self.__kernel__ = self.__kernel__ / np.sum(self.__kernel__)
+        Lenia.check_nan_inf(self.__kernel__)
 
         # plot characteristic functions
         characteristics_plot(self.__kernel__, self.__growth_func__, self.__clipping_func__)
@@ -89,6 +94,14 @@ class Lenia:
         self.__frames__ = []
         self.fig = plt.figure()
         self.plot = plt.imshow(pure_array(self.__world__), vmin=0)
+
+    @staticmethod
+    def check_nan_inf(kernel):
+        if np.isnan(kernel).any() or np.isinf(kernel).any():
+            raise ValueError(
+                "The kernel contains NaN/Inf values. "
+                "This is probably due to the normalization coefficient being close to zero."
+            )
 
     def __growth_update__(self, U):
         return self.__growth_func__(U)
@@ -126,14 +139,17 @@ def world_gen(size, R):
 
 def main():
     l = Lenia(
-        world=world_gen(100, 10),
-        clipping_func=lambda x: 1/(1+np.exp(-x))
+        world=world_gen(1000, 10),
+        clipping_func=lambda x: 1 / (1 + np.exp(-4 * (x - 0.5))),
+        kernel_func=lambda x: np.exp(-((x - 0.5) / 0.15) ** 2 / 2),
+        kernel_norm=lambda x, y: np.power(np.abs(x) ** 4 + np.abs(y) ** 4, 1 / 4),
+        kernel_radius=20
     )
-    l.calculate_frames(100)
+    l.calculate_frames(1000)
     a = l.animate()
     t0 = monotonic()
-    a.save(f"runs/lenia_run_{int(monotonic())}.mp4", writer="ffmpeg", fps=24)
-    print(f"Animation saved in {monotonic()-t0} s.")
+    a.save(f"runs/lenia_run_{int(monotonic())}.mp4", writer="ffmpeg", fps=24, dpi=300)
+    print(f"Animation saved in {monotonic() - t0} s.")
 
 
 if __name__ == "__main__":
