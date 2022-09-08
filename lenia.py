@@ -117,10 +117,21 @@ class Lenia:
         return anim.FuncAnimation(self.fig, self.__update_plot__, frames=len(self.__frames__), interval=1)
 
 
-if __name__ == "__main__":
+def world_gen(size, R):
+    w = np.zeros((size, size))
+    x, y = np.mgrid[0:R, 0:R] + (size - R) // 2
+    w[x, y] = np.random.rand(*w[x, y].shape)
+    return w
+
+
+def main():
     l = Lenia(
-        random_world_size=1024
+        world=world_gen(100, 10)
     )
     l.calculate_frames(1000)
     a = l.animate()
-    a.save("lenia_run.gif", writer="ffmpeg", fps=24)
+    a.save(f"runs/lenia_run_{int(monotonic())}.mp4", writer="ffmpeg", fps=24)
+
+
+if __name__ == "__main__":
+    main()
