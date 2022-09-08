@@ -126,11 +126,13 @@ def world_gen(size, R):
 
 def main():
     l = Lenia(
-        world=world_gen(100, 10)
+        world=world_gen(100, 10),
+        clipping_func=lambda x: 1/(1+np.exp(-x))
     )
     l.calculate_frames(1000)
     a = l.animate()
     a.save(f"runs/lenia_run_{int(monotonic())}.mp4", writer="ffmpeg", fps=24)
+    print("Animation saved.")
 
 
 if __name__ == "__main__":
